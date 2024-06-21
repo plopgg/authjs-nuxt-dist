@@ -2,6 +2,7 @@ import { Auth, skipCSRFCheck } from "@auth/core";
 import { eventHandler, getRequestHeaders, getRequestURL } from "h3";
 import { getToken } from "@auth/core/jwt";
 import { checkOrigin, getAuthJsSecret, getRequestFromEvent, getServerOrigin, makeCookiesFromCookieString } from "../utils.mjs";
+import cloneDeep from "lodash.clonedeep";
 if (!globalThis.crypto) {
   console.log("Polyfilling crypto...");
   import("node:crypto").then((crypto) => {
@@ -19,7 +20,11 @@ export function NuxtAuthHandler(options, runtimeConfig) {
     const request = await getRequestFromEvent(event);
     if (request.url.includes(".js.map")) return;
     checkOrigin(request, runtimeConfig);
-    const response = await Auth(request, options);
+    const newOptions = cloneDeep(options);
+    for (const provider of event.context.providers) {
+      newOptions.providers = newOptions.providers.map((p) => p.id === provider.provider ? { ...p, options: provider.options } : p);
+    }
+    const response = await Auth(request, newOptions);
     return response;
   });
 }

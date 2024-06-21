@@ -5,6 +5,7 @@ import { eventHandler, getRequestHeaders, getRequestURL } from "h3"
 import type { AuthConfig, Session } from "@auth/core/types"
 import { getToken } from "@auth/core/jwt"
 import { checkOrigin, getAuthJsSecret, getRequestFromEvent, getServerOrigin, makeCookiesFromCookieString } from "../utils"
+import cloneDeep from "lodash.clonedeep";
 
 if (!globalThis.crypto) {
   // eslint-disable-next-line no-console
@@ -32,7 +33,11 @@ export function NuxtAuthHandler(options: AuthConfig, runtimeConfig: RuntimeConfi
     const request = await getRequestFromEvent(event)
     if (request.url.includes(".js.map")) return // Do not handle source maps
     checkOrigin(request, runtimeConfig)
-    const response = await Auth(request, options)
+    const newOptions = cloneDeep(options);
+    for (const provider of event.context.providers) {
+      newOptions.providers = newOptions.providers.map(p => p.id === provider.provider ? { ...p, options: provider.options} : p);
+    }
+    const response = await Auth(request, newOptions);
     return response
   })
 }

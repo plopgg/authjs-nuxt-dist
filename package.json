@@ -50,7 +50,9 @@
     "defu": "^6.1.2",
     "immer": "^10.0.3",
     "jose": "^4.15.4",
-    "unctx": "^2.3.1"
+    "unctx": "^2.3.1",
+    "lodash.clonedeep": "^4.5.0"
+
   },
   "devDependencies": {
     "@nuxt/module-builder": "^0.5.2",
